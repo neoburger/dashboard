@@ -18,7 +18,7 @@
 
 # Account Infomation
 
-<input id="account" placeholder="type address, enter to load" />
+## account address
 
 ## *bNEO* balance
 
@@ -27,5 +27,9 @@
 ## *NEO* balance
 
 ## *GAS* balance
+
+# search for a new account
+
+<input id="account" placeholder="type address, enter to load" />
 
 <script src="index.js" />
