@@ -30,6 +30,6 @@
 
 # search for a new account
 
-<input id="account" type="text" placeholder="type address, enter to load" />
+<input id="account" placeholder="type address, enter to load" />
 
 <script src="index.js" />
