@@ -32,6 +32,9 @@ account_input.addEventListener("keyup", function(event) {
 
 let user_address_valid = false;
 var url = window.location.href;
+var index_of_sharp = url.indexOf("#");
+// remove '#{something}' at the end of the url
+if(index_of_sharp > 0){url = url.substring(0, index_of_sharp)}
 const get_address = (match_iterator) => {
   var get_next = false;
   for (x of match_iterator) {
@@ -62,6 +65,22 @@ if(matches){
 }
 if(!user_address_valid){
     used_wallet_hash = "0xb1983fa2479a0c8e2beae032d2df564b5451b7a5";  // Hecate2's wallet address on testnet
+}
+
+function base64ToHex(str) {
+  const raw = atob(str);
+  let result = '';
+  for (let i = 0; i < raw.length; i++) {
+    const hex = raw.charCodeAt(i).toString(16);
+    result += (hex.length === 2 ? hex : '0' + hex);
+  }
+  return result;
+}
+
+function base64ToScriptHash(str) {
+    var little_end_scripthash = base64ToHex(str);
+    var parts = little_end_scripthash.match(/[\s\S]{1,2}/g) || [];
+    return '0x'+parts.reverse().join('');
 }
 
 function httpRequest (opts) {
@@ -198,17 +217,17 @@ function try_build_table_row(try_agent_id){
                 }));
                 table_area = table_area.firstChild;
             }
-            result_hash160 = result; // TODO: change to Hash160
-            var row = [try_agent_id, result, null, null];
+            var result_hash160 = base64ToScriptHash(result); // TODO: change to Hash160
+            var row = [try_agent_id, result_hash160, null, null];
             var neo_balance_promise = httpRequest(build_invokefunction_opts(
                 neo_hash, "balanceOf", [{"type":"Hash160", "value":result_hash160}]))
             .then(r => {
-                row[2] = r/*JSON.parse(r).result.stack[0].value*/
+                row[2] = JSON.parse(r).result.stack[0].value;
             });
             var gas_balance_promise = httpRequest(build_invokefunction_opts(
                 gas_hash, "balanceOf", [{"type":"Hash160", "value":result_hash160}]))
             .then(r => {
-                row[3] = r/*JSON.parse(r).result.stack[0].value*/
+                row[3] = JSON.parse(r).result.stack[0].value;
             });
             try_build_table_row(try_agent_id + 1);
             Promise.allSettled([neo_balance_promise, gas_balance_promise]).then(([result]) => {
@@ -224,15 +243,6 @@ try_build_table_row(0);
 // whitelisted candidates
 httpRequest(build_invokefunction_opts(neo_hash, "getCommittee", [])).then(v => {
     var committees = JSON.parse(v).result.stack[0].value.map(i => i.value);
-    function base64ToHex(str) {
-      const raw = atob(str);
-      let result = '';
-      for (let i = 0; i < raw.length; i++) {
-        const hex = raw.charCodeAt(i).toString(16);
-        result += (hex.length === 2 ? hex : '0' + hex);
-      }
-      return result;
-    }
     committees = committees.map(i => base64ToHex(i));
     function parse_candidate(string_result){
         if(JSON.parse(string_result).result.stack[0].value){return true;}else{return false;}
