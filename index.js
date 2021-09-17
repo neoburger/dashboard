@@ -162,7 +162,37 @@ fetch_system_info(gas_hash, "balanceOf", [{"type":"Hash160", "value":burger_hash
 fetch_system_info(burger_hash, "rPS", [], "reward-per-neo-since-system-start", parse_integer);
 
 // TODO: agent info, a table of agents' ID, scripthash, NEO, GAS, unclaimed GAS
-// TODO: whitelisted candidates: get all possible candidates and check which are in whitelist
+
+// whitelisted candidates
+httpRequest(build_invokefunction_opts(neo_hash, "getCommittee", [])).then(v => {
+    var committees = JSON.parse(v).result.stack[0].value.map(i => i.value);
+    function base64ToHex(str) {
+      const raw = atob(str);
+      let result = '';
+      for (let i = 0; i < raw.length; i++) {
+        const hex = raw.charCodeAt(i).toString(16);
+        result += (hex.length === 2 ? hex : '0' + hex);
+      }
+      return result;
+    }
+    committees = committees.map(i => base64ToHex(i));
+    function parse_candidate(string_result){
+        if(JSON.parse(string_result).result.stack[0].value){return true;}else{return false;}
+    }
+    var has_candidate = false;
+    committees.forEach(function(item, index){
+        httpRequest(build_invokefunction_opts(burger_hash, "candidate", [{"type":"PublicKey","value":item}])).then(v => {
+            if(parse_candidate(v)){
+                build_node("whitelisted-candidates", item);
+            }
+        });
+    });
+    // if(document.getElementById("whitelisted-candidates").nextSibling.nodeName === "CODE"){
+    //     // there are candidates. Do nothing.
+    // }else{
+    //     build_node("whitelisted-candidates", "None");
+    // }
+})
 
 // Account Information
 if(user_address_valid){
