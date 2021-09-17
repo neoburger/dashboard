@@ -145,7 +145,7 @@ function fetch_system_info(contract_hash, function_name, function_params, filled
     });
 }
 
-function parse_integer(string_result){
+function parse_single_result(string_result){
     return JSON.parse(string_result).result.stack[0].value;
 }
 
@@ -155,13 +155,71 @@ build_node('bneo-script-hash', burger_hash);
 // bNEO contract address
 build_node('bneo-contract-address', burger_address);
 // bNEO total supply
-fetch_system_info(burger_hash, "totalSupply", [], "bneo-total-supply", parse_integer);
+fetch_system_info(burger_hash, "totalSupply", [], "bneo-total-supply", parse_single_result);
 // total unclaimed GAS
-fetch_system_info(gas_hash, "balanceOf", [{"type":"Hash160", "value":burger_hash}], "total-unclaimed-gas", parse_integer);
+fetch_system_info(gas_hash, "balanceOf", [{"type":"Hash160", "value":burger_hash}], "total-unclaimed-gas", parse_single_result);
 // reward per NEO since system start
-fetch_system_info(burger_hash, "rPS", [], "reward-per-neo-since-system-start", parse_integer);
+fetch_system_info(burger_hash, "rPS", [], "reward-per-neo-since-system-start", parse_single_result);
 
 // TODO: agent info, a table of agents' ID, scripthash, NEO, GAS, unclaimed GAS
+let table_area = document.getElementById("agent-info");
+table_area.parentElement.insertBefore(document.createElement('a'), table_area.nextSibling);
+table_area = table_area.nextSibling;
+function populateTable(table, rows, cells, content) {
+    var is_func = (typeof content === 'function');
+    if (!table) {
+        table = document.createElement('table');
+        table.setAttribute("id", "agent-info-table");
+        table.border= "1";  table.style.width="100%";
+    }
+    for (var i = 0; i < rows; ++i) {
+        var row = document.createElement('tr');
+        for (var j = 0; j < cells; ++j) {
+            var td = document.createElement('td')
+            td.setAttribute("align", "center");
+            row.appendChild(td);
+            var text = !is_func ? (content + '') : content(table, i, j);
+            row.cells[j].appendChild(document.createTextNode(text));
+        }
+        table.appendChild(row);
+    }
+    return table;
+}
+function try_build_table_row(try_agent_id){
+    httpRequest(build_invokefunction_opts(burger_hash, "agent", [{"type":"Integer", "value":try_agent_id}])).then(v => {
+        var result = parse_single_result(v);
+        if(result){
+            if (try_agent_id == 0) {
+                var table = document.createElement('table');
+                table.setAttribute("id", "agent-info-table");
+                table.border= "1";  table.style.width="100%";
+                table_area.appendChild(populateTable(null, 1, 4, function(t,r,c){
+                    return ["Agent ID", "Agent ScriptHash", "Agent balanceOf NEO", "Agent balanceOf GAS"][c];
+                }));
+                table_area = table_area.firstChild;
+            }
+            result_hash160 = result; // TODO: change to Hash160
+            var row = [try_agent_id, result, null, null];
+            var neo_balance_promise = httpRequest(build_invokefunction_opts(
+                neo_hash, "balanceOf", [{"type":"Hash160", "value":result_hash160}]))
+            .then(r => {
+                row[2] = r/*JSON.parse(r).result.stack[0].value*/
+            });
+            var gas_balance_promise = httpRequest(build_invokefunction_opts(
+                gas_hash, "balanceOf", [{"type":"Hash160", "value":result_hash160}]))
+            .then(r => {
+                row[3] = r/*JSON.parse(r).result.stack[0].value*/
+            });
+            try_build_table_row(try_agent_id + 1);
+            Promise.allSettled([neo_balance_promise, gas_balance_promise]).then(([result]) => {
+                populateTable(table_area, 1, 4, function(t,r,c){return row[c]});
+            });
+        }else{
+            if(try_agent_id == 0){build_node('agent-info', 'No agent available for now');}
+        }
+    });
+}
+try_build_table_row(0);
 
 // whitelisted candidates
 httpRequest(build_invokefunction_opts(neo_hash, "getCommittee", [])).then(v => {
@@ -180,18 +238,21 @@ httpRequest(build_invokefunction_opts(neo_hash, "getCommittee", [])).then(v => {
         if(JSON.parse(string_result).result.stack[0].value){return true;}else{return false;}
     }
     var has_candidate = false;
-    committees.forEach(function(item, index){
-        httpRequest(build_invokefunction_opts(burger_hash, "candidate", [{"type":"PublicKey","value":item}])).then(v => {
+    var committees_promises = committees.map(function(item){
+        return httpRequest(build_invokefunction_opts(burger_hash, "candidate", [{"type":"PublicKey","value":item}]))
+        .then(v => {
             if(parse_candidate(v)){
                 build_node("whitelisted-candidates", item);
             }
         });
     });
-    // if(document.getElementById("whitelisted-candidates").nextSibling.nodeName === "CODE"){
-    //     // there are candidates. Do nothing.
-    // }else{
-    //     build_node("whitelisted-candidates", "None");
-    // }
+    Promise.allSettled(committees_promises).then(([result]) => {
+        if(document.getElementById("whitelisted-candidates").nextSibling.nodeName === "CODE"){
+            // there are some candidates. Do nothing.
+        }else{
+            build_node("whitelisted-candidates", "No candidate for now.");
+        }
+    });
 })
 
 // Account Information
@@ -200,10 +261,10 @@ if(user_address_valid){
     // account address
     build_node("account-address", user_address);
     // bNEO balance
-    fetch_system_info(burger_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "bneo-balance", parse_integer);
-    fetch_system_info(burger_hash, "reward", [{"type":"Hash160", "value":user_address}], "unclaimed-gas-reward", parse_integer);
-    fetch_system_info(neo_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "neo-balance", parse_integer);
-    fetch_system_info(gas_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "gas-balance", parse_integer);
+    fetch_system_info(burger_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "bneo-balance", parse_single_result);
+    fetch_system_info(burger_hash, "reward", [{"type":"Hash160", "value":user_address}], "unclaimed-gas-reward", parse_single_result);
+    fetch_system_info(neo_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "neo-balance", parse_single_result);
+    fetch_system_info(gas_hash, "balanceOf", [{"type":"Hash160", "value":user_address}], "gas-balance", parse_single_result);
 }else{
     build_node("account-infomation", "Input your wallet ScriptHash at the bottom of this page and press Enter to watch your BurgerNEO account Information.")
 }
