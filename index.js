@@ -128,7 +128,7 @@ function httpRequest (opts) {
 
 function build_invokefunction_opts(contract_hash, function_name, function_params) {
     return {
-        url: 'http://seed1.neo.org:20332',
+        url: 'http://seed1.neo.org:20332',  // https://neofura.ngd.network:1927 for main net
         method: 'POST',
         params: JSON.stringify({
             "jsonrpc": "2.0",
