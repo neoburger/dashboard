@@ -6,7 +6,7 @@
 
 ## *bNEO* contract address
 
-## *bNeo* total supply
+## *bNEO* total supply (`10^-8` multiplied)
 
 ## total unclaimed *GAS*
 
