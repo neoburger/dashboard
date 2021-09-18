@@ -13,4 +13,28 @@ new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-addre
 FETCHFUNC(BNEO, "totalSupply", []).then(v => DISPLAY('bneo-total-supply-multiplied-by-108', v.stack[0].value))
 FETCHFUNC(GAS, "balanceOf", [{ "type": "Hash160", "value": BNEO }]).then(v => DISPLAY('total-unclaimed-gas-multiplied-by-108', v.stack[0].value))
 FETCHFUNC(BNEO, "rPS", []).then(v => DISPLAY('gas-reward-per-neo-since-system-start-multiplied-by-108', v.stack[0].value))
-FETCHSCRIPT(SCRIPTAGENT).then(v => console.log(v))
+FETCHSCRIPT(SCRIPTAGENT).then(v => {
+    const title = document.getElementById('agent-info');
+    const p = document.createElement('p');
+    p.innerText = `* represents 'multiplied by 10^8'`
+    title.parentElement.insertBefore(p, title.nextSibling);
+    const table = document.createElement('table');
+    title.parentElement.insertBefore(table, title.nextSibling);
+    const tr = document.createElement('tr');
+    table.appendChild(tr);
+    { const th = document.createElement('th'); th.innerText = 'script hash'; tr.appendChild(th); }
+    { const th = document.createElement('th'); th.innerText = 'neo balance'; tr.appendChild(th); }
+    { const th = document.createElement('th'); th.innerText = 'gas balance*'; tr.appendChild(th); }
+    { const th = document.createElement('th'); th.innerText = 'unclaimed gas*'; tr.appendChild(th); }
+    v.stack.forEach(vv => {
+        if (!vv.value) return;
+        const tr = document.createElement('tr');
+        table.appendChild(tr);
+        const scripthash = `0x${[...atob(vv.value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).reverse().join('')}`;
+        { const td = document.createElement('td'); td.innerText = scripthash; tr.appendChild(td); }
+        { const td = document.createElement('td'); tr.appendChild(td); FETCHFUNC(NEO, "balanceOf", [{ "type": "Hash160", "value": scripthash }]).then(vvv => td.innerText = vvv.stack[0].value); }
+        { const td = document.createElement('td'); tr.appendChild(td); FETCHFUNC(GAS, "balanceOf", [{ "type": "Hash160", "value": scripthash }]).then(vvv => td.innerText = vvv.stack[0].value); }
+        { const td = document.createElement('td'); tr.appendChild(td); FETCHFUNC('0xda65b600f7124ce6c79950c1772a36403104f2be', 'currentIndex', []).then(vvv => FETCHFUNC(NEO, "unclaimedGas", [{ type: "Hash160", value: scripthash }, { type: "Integer", value: vvv.stack[0].value }])).then(vvv => td.innerText = vvv.stack[0].value); }
+    });
+})
+
