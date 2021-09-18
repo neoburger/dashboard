@@ -1,19 +1,13 @@
-new Promise(resolve => resolve('0x48c40d4666f93408be1bef038b6722404d9a4c2a')).then(v => {
-  const value = document.createElement('code');
-  value.innerText = v;
-  const title = document.getElementById('bneo-script-hash');
-  title.parentElement.insertBefore(value, title.nextSibling)
-})
-
-new Promise(resolve => resolve('NPmdLGJN47EddqYcxixdGMhtkr7Z5w4Aos')).then(v => {
-  const value = document.createElement('code');
-  value.innerText = v;
-  const title = document.getElementById('bneo-contract-address');
-  title.parentElement.insertBefore(value, title.nextSibling)
-})
-const ENDPOINT = 'https://dora.coz.io/monitor';
+const ENDPOINT = 'https://neofura.ngd.network:1927';
+const NEO = '0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5';
+const GAS = '0xd2a4cff31913016155e38e474a2c06d08be276cf';
 const BNEO = '0x48c40d4666f93408be1bef038b6722404d9a4c2a';
-fetch(ENDPOINT, {
-    method: 'POST', mode: 'cors', body: JSON.stringify({ params: [BNEO, "totalSupply", []], jsonrpc: "2.0", id: 1 })
-}).then(console.log)
-// cors test
+const BNEOADDR = 'NPmdLGJN47EddqYcxixdGMhtkr7Z5w4Aos';
+const FETCH = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [ctr, method, args, [{ account: BNEO, scopes: "CalledByEntry", "allowedcontracts": [], "allowedgroups": [] }]], method: "invokefunction", jsonrpc: "2.0", id: 1 }) })
+const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
+
+new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
+
+new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
+
+FETCH(BNEO, "totalSupply", []).then(console.log)
