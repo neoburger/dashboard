@@ -1,5 +1,3 @@
-**under developing and do not use this page**
-
 # System Infomation
 
 ## *bNEO* script hash
@@ -16,19 +14,7 @@
 
 ## whitelisted candidates
 
-# Account Infomation
-
-## account address
-
-## *bNEO* balance
-
-## unclaimed *GAS* reward
-
-## *NEO* balance
-
-## *GAS* balance
-
-# search for a new account
+# Account Infomation (TODO)
 
 <input id="account" placeholder="type address, enter to load" />
 
