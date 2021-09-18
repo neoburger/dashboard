@@ -6,11 +6,11 @@
 
 ## *bNEO* contract address
 
-## *bNEO* total supply (`10^-8` multiplied)
+## *bNEO* total supply (multiplied by `10^8`)
 
-## total unclaimed *GAS*
+## total unclaimed *GAS* (multiplied by `10^8`)
 
-## reward per *NEO* since system start
+## reward per *NEO* since system start (multiplied by `10^8`)
 
 ## agent info
 
