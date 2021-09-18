@@ -7,7 +7,7 @@ const FETCH = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body: JSO
 const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
 
 new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
-
 new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
-
-FETCH(BNEO, "totalSupply", []).then(v => DISPLAY('', v.stack[0].value))
+FETCH(BNEO, "totalSupply", []).then(v => DISPLAY('bneo-total-supply-multiplied-by-108', v.stack[0].value))
+FETCH(GAS, "balanceOf", [{ "type": "Hash160", "value": BNEO }]).then(v => DISPLAY('total-unclaimed-gas-multiplied-by-108', v.stack[0].value))
+FETCH(BNEO, "rPS", []).then(v => DISPLAY('reward-per-neo-since-system-start-multiplied-by-108', v.stack[0].value))
