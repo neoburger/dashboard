@@ -10,7 +10,7 @@
 
 ## total unclaimed *GAS* (multiplied by `10^8`)
 
-## reward per *NEO* since system start (multiplied by `10^8`)
+## *GAS* reward per *NEO* since system start (multiplied by `10^8`)
 
 ## agent info
 
