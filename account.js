@@ -10,3 +10,6 @@ const DISPLAY = (id, value) => { const element = document.createElement('code');
 
 new Promise(resolve => resolve(ADDRESS)).then(v => DISPLAY('account-address', v));
 FETCHFUNC(BNEO, 'balanceOf', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('bneo-balance', v.stack[0].value));
+FETCHFUNC(BNEO, 'reward', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('gas-unclaimed-multiplied-by-108', v.stack[0].value));
+FETCHFUNC(NEO, 'balanceOf', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('neo-balance', v.stack[0].value));
+FETCHFUNC(GAS, 'balanceOf', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('gas-balance-multiplied-by-108', v.stack[0].value));
