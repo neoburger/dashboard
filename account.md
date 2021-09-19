@@ -4,10 +4,10 @@
 
 ## *bNEO* balance
 
-## *GAS* unclaimed
+## *GAS* unclaimed (multiplied by `10^8`)
 
 ## *NEO* balance
 
-## *GAS* balance
+## *GAS* balance (multiplied by `10^8`)
 
 <script src="account.js" />
