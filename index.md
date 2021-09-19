@@ -16,7 +16,7 @@
 
 # Account Infomation
 
-<form action="account" method="get">
+<form action="account" method="get" target="_blank">
   <input name="address" placeholder="type address and enter">
 </form>
 
