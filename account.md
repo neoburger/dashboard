@@ -9,3 +9,5 @@
 ## *NEO* balance
 
 ## *GAS* balance
+
+<script src="account.js" />
