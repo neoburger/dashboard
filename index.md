@@ -14,8 +14,10 @@
 
 ## whitelisted candidates
 
-# Account Infomation (TODO)
+# Account Infomation
 
-<input id="account" placeholder="type address, enter to load" />
+<form action="account" method="get">
+  <input name="address" placeholder="type address and enter">
+</form>
 
 <script src="index.js" />
