@@ -17,20 +17,27 @@ FETCHSCRIPT(SCRIPTAGENT).then(v => {
     const title = document.getElementById('agent-info');
     const p = document.createElement('p'); title.parentElement.insertBefore(p, title.nextSibling);
     p.innerText = `* represents 'multiplied by 10^8'`
-    const table = document.createElement('table'); title.parentElement.insertBefore(table, title.nextSibling);
-    const tr = document.createElement('tr'); table.appendChild(tr);
-    { const th = document.createElement('th'); th.innerText = 'script hash'; tr.appendChild(th); }
-    { const th = document.createElement('th'); th.innerText = 'neo balance'; tr.appendChild(th); }
-    { const th = document.createElement('th'); th.innerText = 'gas balance*'; tr.appendChild(th); }
-    { const th = document.createElement('th'); th.innerText = 'unclaimed gas*'; tr.appendChild(th); }
+    const ul = document.createElement('ul'); title.parentElement.insertBefore(ul, title.nextSibling);
     v.stack.forEach(vv => {
         if (!vv.value) return;
-        const tr = document.createElement('tr'); table.appendChild(tr);
+        const li = document.createElement('li'); ul.appendChild(li);
+        const table = document.createElement('table'); li.appendChild(table);
         const scripthash = `0x${[...atob(vv.value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).reverse().join('')}`;
-        { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); code.innerText = scripthash; }
-        { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC(NEO, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => code.innerText = vvv.stack[0].value); }
-        { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC(GAS, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => code.innerText = vvv.stack[0].value); }
-        { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC('0xda65b600f7124ce6c79950c1772a36403104f2be', 'currentIndex', []).then(vvv => FETCHFUNC(NEO, 'unclaimedGas', [{ type: 'Hash160', value: scripthash }, { type: 'Integer', value: vvv.stack[0].value }])).then(vvv => code.innerText = vvv.stack[0].value); }
+        const data = [
+            ['script hash', new Promise(resolve => resolve(scripthash))],
+            ['neo balance', FETCHFUNC(NEO, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => vvv.stack[0].value)],
+            ['gas balance*', FETCHFUNC(GAS, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => vvv.stack[0].value)],
+            ['undistributed gas*', FETCHFUNC('0xda65b600f7124ce6c79950c1772a36403104f2be', 'currentIndex', []).then(vvv => FETCHFUNC(NEO, 'unclaimedGas', [{ type: 'Hash160', value: scripthash }, { type: 'Integer', value: vvv.stack[0].value }])).then(vvv => vvv.stack[0].value)],
+            ['vote target', FETCHFUNC(NEO, 'getAccountState', [{ type: 'Hash160', value: scripthash }]).then(vvv => `${[...atob(vvv.stack[0].value[2].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join('')}`)],
+        ];
+        data.forEach(([k, f]) => {
+            const tr = document.createElement('tr'); table.appendChild(tr);
+            const th = document.createElement('th'); tr.appendChild(th);
+            const td = document.createElement('td'); tr.appendChild(td);
+            const code = document.createElement('code'); td.appendChild(code);
+            th.innerText = k;
+            f.then(vvv => {code.innerText = vvv});
+        })
     });
 })
 FETCHFUNC(NEO, 'getCandidates', []).then(v => {
