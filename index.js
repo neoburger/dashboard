@@ -22,7 +22,8 @@ FETCHSCRIPT(SCRIPTAGENT).then(v => {
     { const th = document.createElement('th'); th.innerText = 'script hash'; tr.appendChild(th); }
     { const th = document.createElement('th'); th.innerText = 'neo balance'; tr.appendChild(th); }
     { const th = document.createElement('th'); th.innerText = 'gas balance*'; tr.appendChild(th); }
-    { const th = document.createElement('th'); th.innerText = 'unclaimed gas*'; tr.appendChild(th); }
+    { const th = document.createElement('th'); th.innerText = 'vote target'; tr.appendChild(th); }
+    { const th = document.createElement('th'); th.innerText = 'undistributed gas*'; tr.appendChild(th); }
     v.stack.forEach(vv => {
         if (!vv.value) return;
         const tr = document.createElement('tr'); table.appendChild(tr);
@@ -30,6 +31,7 @@ FETCHSCRIPT(SCRIPTAGENT).then(v => {
         { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); code.innerText = scripthash; }
         { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC(NEO, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => code.innerText = vvv.stack[0].value); }
         { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC(GAS, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => code.innerText = vvv.stack[0].value); }
+        { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC(NEO, 'getAccountState', [{ type: 'Hash160', value: scripthash }]).then(vvv => code.innerText = `${[...atob(vvv.stack[0].value[2].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join('')}`); }
         { const td = document.createElement('td'); tr.appendChild(td); const code = document.createElement('code'); td.appendChild(code); FETCHFUNC('0xda65b600f7124ce6c79950c1772a36403104f2be', 'currentIndex', []).then(vvv => FETCHFUNC(NEO, 'unclaimedGas', [{ type: 'Hash160', value: scripthash }, { type: 'Integer', value: vvv.stack[0].value }])).then(vvv => code.innerText = vvv.stack[0].value); }
     });
 })
