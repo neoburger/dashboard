@@ -11,9 +11,6 @@ const DISPLAY = (id, value) => { const element = document.createElement('code');
 
 document.getElementById('network_input').value = isTestNet ? 'testnet' : 'mainnet';
 document.getElementById('network-select').value = isTestNet ? 'testnet' : 'mainnet';
-document.getElementById('network-select').onchange=async function() {
-    window.location.href = "?network=" + document.getElementById('network-select').value
-}
 new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
 new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
 FETCHFUNC(BNEO, 'totalSupply', []).then(v => DISPLAY('bneo-total-supply-multiplied-by-108', v.stack[0].value))

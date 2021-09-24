@@ -10,9 +10,6 @@ const FETCHFUNC = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body:
 const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
 
 document.getElementById('network-select').value = isTestNet ? 'testnet' : 'mainnet';
-document.getElementById('network-select').onchange=async function() {
-    window.location.href = "?network=" + document.getElementById('network-select').value + "&address=" + ADDRESS
-}
 new Promise(resolve => resolve(ADDRESS)).then(v => DISPLAY('account-address', v));
 FETCHFUNC(BNEO, 'balanceOf', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('bneo-balance', v.stack[0].value));
 FETCHFUNC(BNEO, 'reward', [{type: "Hash160", value: SCRIPTHASH}]).then(v => DISPLAY('gas-unclaimed-multiplied-by-108', v.stack[0].value));
