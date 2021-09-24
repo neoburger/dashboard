@@ -1,4 +1,5 @@
 theme: jekyll-theme-minimal
 title: NeoBurger Dashboard
-description: <a href="/">NeoBurger</a> Infomation Explorer
+description: <a href="/">NeoBurger</a> Infomation Explorer <select id="network-select"><option value="mainnet">mainnet</option><option value="testnet">testnet</option></select>
 show_downloads: false
+github: [metadata]
