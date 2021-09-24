@@ -1,4 +1,5 @@
-const ENDPOINT = 'https://neofura.ngd.network:1927';
+const isTestNet = new URLSearchParams(location.search).get('network') == 'testnet'
+const ENDPOINT = isTestNet ? 'https://n3seed1.ngd.network:10332' : 'https://neofura.ngd.network:1927';
 const NEO = '0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5';
 const GAS = '0xd2a4cff31913016155e38e474a2c06d08be276cf';
 const BNEO = '0x48c40d4666f93408be1bef038b6722404d9a4c2a';
@@ -8,6 +9,8 @@ const FETCHFUNC = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body:
 const FETCHSCRIPT = (script) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [script, [{ account: BNEO, scopes: 'CalledByEntry', 'allowedcontracts': [], 'allowedgroups': [] }]], method: 'invokescript', jsonrpc: '2.0', id: 1 }) }).then(v => v.json()).then(v => v.result)
 const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
 
+document.getElementById('network_input').value = isTestNet ? 'testnet' : 'mainnet';
+document.getElementById('network-select').value = isTestNet ? 'testnet' : 'mainnet';
 new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
 new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
 FETCHFUNC(BNEO, 'totalSupply', []).then(v => DISPLAY('bneo-total-supply-multiplied-by-108', v.stack[0].value))

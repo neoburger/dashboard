@@ -14,10 +14,12 @@
 
 ## whitelisted candidates
 
-# Account Infomation
+# Account Information
 
 <form action="account" method="get" target="_blank">
+  <input id = "network_input" name="network" style="display: none;">
   <input name="address" placeholder="type address and enter">
+  <input type="submit" style="visibility: hidden;" />
 </form>
 
 <script src="index.js" />
