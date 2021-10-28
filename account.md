@@ -10,4 +10,5 @@
 
 ## *GAS* balance (multiplied by `10^8`)
 
-<script src="account.js" />
+<script src="https://cdn.jsdelivr.net/npm/lazymacro/index.js"></script>
+<script src="account.js"></script>
