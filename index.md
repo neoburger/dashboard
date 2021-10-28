@@ -10,6 +10,8 @@
 
 ## *GAS* reward per *NEO* since system start (multiplied by `10^8`)
 
+## *GAS* reward per *NEO* per year (multiplied by `10^8`)
+
 ## agent info
 
 ## whitelisted candidates

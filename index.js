@@ -7,6 +7,7 @@ const SCRIPTAGENT = 'AAARwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAERwB8
 const FETCHFUNC = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [ctr, method, args, [{ account: BNEO, scopes: 'CalledByEntry', 'allowedcontracts': [], 'allowedgroups': [] }]], method: 'invokefunction', jsonrpc: '2.0', id: 1 }) }).then(v => v.json()).then(v => v.result)
 const FETCHSCRIPT = (script) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [script, [{ account: BNEO, scopes: 'CalledByEntry', 'allowedcontracts': [], 'allowedgroups': [] }]], method: 'invokescript', jsonrpc: '2.0', id: 1 }) }).then(v => v.json()).then(v => v.result)
 const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
+const AGENTINFO = [];
 
 new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
 new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
@@ -36,14 +37,19 @@ FETCHSCRIPT(SCRIPTAGENT).then(v => {
             const td = document.createElement('td'); tr.appendChild(td);
             const code = document.createElement('code'); td.appendChild(code);
             th.innerText = k;
-            f.then(vvv => {code.innerText = vvv});
-        })
+            f.then(vvv => {code.innerText = vvv;});
+        });
+        AGENTINFO.push(data);
     });
 })
 FETCHFUNC(NEO, 'getCandidates', []).then(v => {
     const title = document.getElementById('whitelisted-candidates');
     const ul = document.createElement('ul'); title.parentElement.insertBefore(ul, title.nextSibling);
-    v.stack[0].value.forEach(vv => {
+    const voteInfo = {"gpb": 0, "votes": 0};
+    v.stack[0].value = v.stack[0].value.sort((a,b)=>b.value[1].value-a.value[1].value);
+    v.stack[0].value.forEach((vv, rank) => {
+        const factor = rank < 7 ? 2 : rank < 21 ? 1 : 0;
+        // console.log(vv.value[1].value, rank, factor);
         const pk = [...atob(vv.value[0].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join('');
         FETCHFUNC(BNEO, 'candidate', [{ type: 'PublicKey', value: pk }]).then(vvv => {
             if (!vvv.stack[0].value) return;
@@ -51,5 +57,16 @@ FETCHFUNC(NEO, 'getCandidates', []).then(v => {
             const code = document.createElement('code'); li.appendChild(code);
             code.innerText = pk
         })
+        AGENTINFO.forEach(vvv => {
+            vvv[4][1].then(vvvv => {
+                if (vvvv != pk) return;
+                vvv[1][1].then(vvvvv => {
+                    voteInfo.gpb += 400000000 * factor * vvvvv / (vv.value[1].value * 28);
+                    voteInfo.votes += vvvvv;
+                    // 0.5 * 10e-8 GAS for every NEO per block, 5760 block per day
+                    DISPLAY('gas-reward-per-neo-per-year-multiplied-by-108', Math.round((voteInfo.gpb/voteInfo.votes + 0.5) * 5760 * 365))
+                })
+            });
+        });
     })
 })
