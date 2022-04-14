@@ -20,4 +20,6 @@
   <input name="address" placeholder="type address and enter">
 </form>
 
-<script src="index.js" />
+
+<script src="https://unpkg.com/@cityofzion/neon-js@5.0.0/dist/browser.js"></script>
+<script src="index.js"></script>

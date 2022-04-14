@@ -2,11 +2,13 @@ const ENDPOINT = 'https://neofura.ngd.network';
 const NEO = '0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5';
 const GAS = '0xd2a4cff31913016155e38e474a2c06d08be276cf';
 const BNEO = '0x48c40d4666f93408be1bef038b6722404d9a4c2a';
+const COMMITTEEINFO = '0xb776afb6ad0c11565e70f8ee1dd898da43e51be1';
 const BNEOADDR = 'NPmdLGJN47EddqYcxixdGMhtkr7Z5w4Aos';
 const SCRIPTAGENT = 'AAARwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAERwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAIRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAMRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAQRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAURwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAYRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAcRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAgRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAkRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAoRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAsRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAAwRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAA0RwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAA4RwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSAA8RwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSABARwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSABERwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSABIRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSABMRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtSABQRwB8MBWFnZW50DBQqTJpNQCJniwPvG74INPlmRg3ESEFifVtS'
 const FETCHFUNC = (ctr, method, args) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [ctr, method, args, [{ account: BNEO, scopes: 'CalledByEntry', 'allowedcontracts': [], 'allowedgroups': [] }]], method: 'invokefunction', jsonrpc: '2.0', id: 1 }) }).then(v => v.json()).then(v => v.result)
 const FETCHSCRIPT = (script) => fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ params: [script, [{ account: BNEO, scopes: 'CalledByEntry', 'allowedcontracts': [], 'allowedgroups': [] }]], method: 'invokescript', jsonrpc: '2.0', id: 1 }) }).then(v => v.json()).then(v => v.result)
 const DISPLAY = (id, value) => { const element = document.createElement('code'); element.innerText = value; const title = document.getElementById(id); title.parentElement.insertBefore(element, title.nextSibling); }
+const NeonWallet = window.Neon.wallet;
 
 new Promise(resolve => resolve(BNEO)).then(v => DISPLAY('bneo-script-hash', v));
 new Promise(resolve => resolve(BNEOADDR)).then(v => DISPLAY('bneo-contract-address', v))
@@ -29,14 +31,26 @@ FETCHSCRIPT(SCRIPTAGENT).then(v => {
             ['gas balance*', FETCHFUNC(GAS, 'balanceOf', [{ type: 'Hash160', value: scripthash }]).then(vvv => vvv.stack[0].value)],
             ['undistributed gas*', FETCHFUNC('0xda65b600f7124ce6c79950c1772a36403104f2be', 'currentIndex', []).then(vvv => FETCHFUNC(NEO, 'unclaimedGas', [{ type: 'Hash160', value: scripthash }, { type: 'Integer', value: vvv.stack[0].value }])).then(vvv => vvv.stack[0].value)],
             ['vote target', FETCHFUNC(NEO, 'getAccountState', [{ type: 'Hash160', value: scripthash }]).then(vvv => `${[...atob(vvv.stack[0].value[2].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join('')}`)],
+            ['target name', FETCHFUNC(NEO, 'getAccountState', [{ type: 'Hash160', value: scripthash }]).then(vvv => `${NeonWallet.getScriptHashFromPublicKey([...atob(vvv.stack[0].value[2].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join(''))}`).then(vvvv => FETCHFUNC(COMMITTEEINFO, 'getInfo', [{ type: 'Hash160', value: vvvv }])).then(vvvvv => `${decodeURIComponent(atob(vvvvv.stack[0].value[1].value).split('').map(function(c) {return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);}).join(''))}`)],
+            ['target logo', FETCHFUNC(NEO, 'getAccountState', [{ type: 'Hash160', value: scripthash }]).then(vvv => `${NeonWallet.getScriptHashFromPublicKey([...atob(vvv.stack[0].value[2].value)].map(c => c.charCodeAt(0).toString(16).padStart(2, 0)).join(''))}`).then(vvvv => FETCHFUNC(COMMITTEEINFO, 'getInfo', [{ type: 'Hash160', value: vvvv }])).then(vvvvv => `https://filesend.ngd.network/gate/get/CeeroywT8ppGE4HGjhpzocJkdb2yu3wD5qCGFTjkw1Cc/${atob(vvvvv.stack[0].value[9].value)}`)],
         ];
         data.forEach(([k, f]) => {
             const tr = document.createElement('tr'); table.appendChild(tr);
             const th = document.createElement('th'); tr.appendChild(th);
             const td = document.createElement('td'); tr.appendChild(td);
-            const code = document.createElement('code'); td.appendChild(code);
             th.innerText = k;
-            f.then(vvv => {code.innerText = vvv});
+            f.then(vvv => {
+                if (vvv.startsWith("http")) {
+                    const img = document.createElement('img');
+                    img.src = vvv;
+                    img.style.maxHeight = "24px";
+                    td.appendChild(img);
+                } else {
+                    const code = document.createElement('code');
+                    code.innerText = vvv;
+                    td.appendChild(code);
+                }
+            });
         })
     });
 })
